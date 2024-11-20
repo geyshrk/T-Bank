@@ -1,3 +1,5 @@
+package ru.msnigirev.tbank.jar;
+
 import com.beust.jcommander.converters.IParameterSplitter;
 
 import java.util.Arrays;
