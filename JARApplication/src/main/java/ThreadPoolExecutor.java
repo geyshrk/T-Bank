@@ -1,39 +1,45 @@
-import java.util.ArrayList;
-import java.util.List;
+import lombok.Getter;
+
+import java.util.*;
 
 public class ThreadPoolExecutor {
-    private int maximumPoolSize;
-    private List<Thread> threads;
-    private int currThreadCount;
-    public ThreadPoolExecutor(int maximumPoolSize) {
-        this.maximumPoolSize = maximumPoolSize;
-        currThreadCount = 0;
-        threads = new ArrayList<>();
-    }
-    public void submit(Runnable runnable){
-        submit(new Thread(runnable));
-    }
-        /*
-        Проверка
-        Прибавка
-        Запуск
-        Убавка
-         */
-    public void submit(Thread thread){
-
-        if (currThreadCount < maximumPoolSize){
-            //Запускаемся и прибавляем к количеству потоков
-            while (currThreadCount < maximumPoolSize) thread.wait();
-            ++currThreadCount;
-        } else {
-            /*
-            Уходим в ожидание пинга
-            Когда пинганули, просыпаемся и занимаем свободный слот
-             */
+    private volatile boolean active;
+    private final Queue<Runnable> queue;
+    private final Set<Executor> executors;
+    @Getter
+    private volatile int completedTasksCount;
+    public ThreadPoolExecutor(int poolSize) {
+        queue = new ArrayDeque<>();
+        executors = new HashSet<>();
+        active = true;
+        for (int i = 0; i < poolSize; i++) {
+            Executor executor = new Executor();
+            executor.start();
+            executors.add(executor);
         }
-        //Пингуем всех ожидающих, мол, все сделали
-        //Убавляем количество
-        thread.notifyAll();
-        --currThreadCount;
+    }
+    public void submit(Runnable task){
+        if (task == null) throw new NullPointerException();
+        queue.add(task);
+    }
+    public void shutdown(){
+        active = false;
+    }
+    private class Executor extends Thread{
+        @Override
+        public void run() {
+            while (active){
+                Runnable task = null;
+                synchronized (queue) {
+                    task = queue.poll();
+                }
+                if (task != null) {
+                    System.out.println("started: " + this);
+                    task.run();
+                    System.out.println("finished: " + this);
+                    ++completedTasksCount;
+                }
+            }
+        }
     }
 }

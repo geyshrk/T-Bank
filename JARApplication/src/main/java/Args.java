@@ -1,5 +1,4 @@
 import com.beust.jcommander.Parameter;
-
 import java.util.List;
 
 public class Args {
@@ -7,8 +6,8 @@ public class Args {
     @Parameter(names = "--mode")
     public String mode;
 
-    @Parameter(names = "--urls", splitter = SemicolonParameterSplitter.class)
-    public List<String> urls;
+    @Parameter(names = "--files", splitter = SemicolonParameterSplitter.class)
+    public List<String> files;
 
     @Parameter(names = "--count")
     public String count;
